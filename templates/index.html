@@ -8,9 +8,14 @@
 <body class="bg-light">
 <div class="container mt-5">
     <h2 class="mb-4">📊 Project Report Viewer</h2>
+
     <form method="POST" class="form-inline mb-4">
-        <input type="text" name="project_number" placeholder="Enter Project Number"
-               class="form-control mr-2" style="width: 300px;" required>
+        <label class="mr-2">Select Project Number:</label>
+        <select name="project_number" class="form-control mr-2" style="width:300px;">
+            {% for number in all_project_numbers %}
+                <option value="{{ number }}" {% if number == selected_number %}selected{% endif %}>{{ number }}</option>
+            {% endfor %}
+        </select>
         <button type="submit" class="btn btn-primary">Generate</button>
     </form>
 
@@ -54,6 +59,11 @@
                     </ul>
                 </div>
             {% endfor %}
+
+            <form method="POST" action="/download" class="mt-3">
+                <input type="hidden" name="project_number" value="{{ report.project_number }}">
+                <button type="submit" class="btn btn-success">⬇️ Download Report as TXT</button>
+            </form>
         </div>
     {% endif %}
 </div>
