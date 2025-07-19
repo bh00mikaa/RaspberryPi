@@ -1,13 +1,26 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect
 import pandas as pd
 import io
+import os
 
 app = Flask(__name__)
-DATA_FILE = 'Daily Report (Authentic Engineers)_DAILY REPORT_Table.csv'
-df = pd.read_csv(DATA_FILE)
+
+DATA_FILE = 'data/projects.csv'
+
+def load_df():
+    if os.path.exists(DATA_FILE):
+        return pd.read_csv(DATA_FILE)
+    else:
+        return pd.DataFrame(columns=[
+            'Project Number', 'Project Name', 'Enter Your Name',
+            'Hours', 'Date', 'DEPARTMENT'
+        ])
+
+df = load_df()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    global df
     report = None
     error = None
     selected_number = None
@@ -70,12 +83,13 @@ def index():
 
 @app.route('/select')
 def select_project():
-    project_numbers = sorted(df['Project Number'].dropna().unique())
-    return render_template("project.html", project_numbers=project_numbers)
+    all_project_numbers = sorted(df['Project Number'].dropna().unique())
+    return render_template("project.html", project_numbers=all_project_numbers)
 
 
 @app.route('/download', methods=['POST'])
 def download():
+    global df
     project_number = request.form['project_number'].strip()
     filtered_df = df[df['Project Number'] == project_number]
 
@@ -109,9 +123,37 @@ def download():
     return send_file(
         io.BytesIO(buffer.getvalue().encode()),
         as_attachment=True,
-        attachment_filename=f'report_{project_number}.txt',  # or use attachment_filename if old Flask
+        attachment_filename=f'report_{project_number}.txt',
         mimetype='text/plain'
     )
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    global df
+    msg = ""
+    if request.method == 'POST':
+        uploaded = request.files.get('dataset')
+        if uploaded and uploaded.filename.endswith('.csv'):
+            uploaded.save(DATA_FILE)
+            df = load_df()
+            msg = "New dataset uploaded successfully."
+        else:
+            msg = "Invalid file. Please upload a CSV."
+
+    return render_template('admin.html',
+                           message=msg,
+                           row_count=len(df),
+                           columns=list(df.columns))
+
+
+@app.route('/download-csv')
+def download_csv():
+    if not os.path.exists(DATA_FILE):
+        return "No file available.", 404
+    return send_file(DATA_FILE, as_attachment=True,
+                     attachment_filename='current_dataset.csv',
+                     mimetype='text/csv')
 
 
 if __name__ == '__main__':
