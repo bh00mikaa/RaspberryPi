@@ -211,7 +211,7 @@ def download():
     return send_file(
         io.BytesIO(buffer.getvalue().encode()),
         as_attachment=True,
-        download_name=f'report_{project_number}.txt',
+        attachment_filename=f'report_{project_number}.txt',
         mimetype='text/plain'
     )
 
