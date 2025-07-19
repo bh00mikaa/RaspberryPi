@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Report Viewer</title>
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h2 class="mb-4">📊 Project Report Viewer</h2>
+    <form method="POST" class="form-inline mb-4">
+        <input type="text" name="project_number" placeholder="Enter Project Number"
+               class="form-control mr-2" style="width: 300px;" required>
+        <button type="submit" class="btn btn-primary">Generate</button>
+    </form>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if report %}
+        <div class="card p-3">
+            <h4>📌 Project Overview</h4>
+            <p><strong>Project Number:</strong> {{ report.project_number }}</p>
+            <p><strong>Project Name:</strong> {{ report.project_name }}</p>
+            <p><strong>Employees:</strong> {{ report.employees }}</p>
+            <p><strong>Total Hours:</strong> {{ report.total_hours }}</p>
+            <p><strong>Start Date:</strong> {{ report.start_date }}</p>
+            <p><strong>End Date:</strong> {{ report.end_date }}</p>
+            <p><strong>Duration:</strong> {{ report.duration }} days</p>
+            <p><strong>Departments Involved:</strong> {{ report.departments_count }}</p>
+
+            <hr>
+            <h5>Department-wise Breakdown</h5>
+            {% for dept in report.departments %}
+                <div class="mb-3">
+                    <strong>Department:</strong> {{ dept.name }}<br>
+                    <small>Employees Involved: {{ dept.employees }}</small><br>
+                    <small>Total Hours: {{ dept.hours }}</small>
+                    <ul class="mt-2">
+                        {% for member in dept.members %}
+                            <li>
+                                <strong>{{ member.name }}</strong> – {{ member.total_hours }} hrs
+                                <details>
+                                    <summary>Show Dates & Hours</summary>
+                                    <ul>
+                                        {% for day in member.daily %}
+                                            <li>{{ day.Date }}: {{ day.Hours }} hrs</li>
+                                        {% endfor %}
+                                    </ul>
+                                </details>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>
